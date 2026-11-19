@@ -1,23 +1,68 @@
-import os
-import asyncio
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXO AI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0d1117;color:#e6edf3;font-family:system-ui,sans-serif;height:100dvh;display:flex;flex-direction:column}
+  header{padding:14px;text-align:center;font-weight:700;background:#161b22;border-bottom:1px solid #30363d}
+  #chat{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:85%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;line-height:1.4}
+  .user{align-self:flex-end;background:#2b8fb5}
+  .bot{align-self:flex-start;background:#21262d}
+  form{display:flex;gap:8px;padding:10px;background:#161b22}
+  input{flex:1;padding:12px;border-radius:20px;border:1px solid #30363d;background:#0d1117;color:#fff;font-size:16px}
+  button{padding:0 18px;border:0;border-radius:20px;background:#7c3aed;color:#fff;font-size:16px}
+</style>
+</head>
+<body>
+<header>🤖 NEXO AI</header>
+<div id="chat">
+  <div class="msg bot">Sálem! Men NEXO AI. Sorawıńızdı jazıń 💜</div>
+</div>
+<form id="f">
+  <input id="q" placeholder="Xabar jazıń..." autocomplete="off" required>
+  <button>➤</button>
+</form>
 
-TOKEN = os.getenv("BOT_TOKEN")
+<script>
+const chat = document.getElementById('chat');
+const f = document.getElementById('f');
+const q = document.getElementById('q');
+let history = [];
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
+function add(text, cls){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.textContent = text;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  return d;
+}
 
-@dp.message(CommandStart())
-async def start(message: types.Message):
-    await message.answer("Assalomu alaykum! Men NEXO AI járdemshisimen.")
-
-@dp.message()
-async def echo(message: types.Message):
-    await message.answer(f"Siz jazdıńız: {message.text}")
-
-async def main():
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = q.value.trim();
+  if(!text) return;
+  q.value = '';
+  add(text, 'user');
+  history.push({role:'user', content:text});
+  const wait = add('...', 'bot');
+  try{
+    const r = await fetch('/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({messages: history})
+    });
+    const data = await r.json();
+    wait.textContent = data.reply || 'Qátelik boldı';
+    history.push({role:'assistant', content: data.reply});
+  }catch(err){
+    wait.textContent = 'Server menen baylanıs joq.';
+  }
+});
+</script>
+</body>
+</html>
