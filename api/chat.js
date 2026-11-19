@@ -29,3 +29,9 @@ export default async function handler(req, res) {
     reply: data.candidates?.[0]?.content?.parts?.[0]?.text || "Qátelik boldı"
   });
 }
+  const data = await r.json();
+  res.json({
+    reply: data.candidates?.[0]?.content?.parts?.[0]?.text
+      || ("Qátelik: " + (data.error?.message || JSON.stringify(data)))
+  });
+}
